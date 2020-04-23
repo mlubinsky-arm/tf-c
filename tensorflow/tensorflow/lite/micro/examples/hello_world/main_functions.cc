@@ -17,7 +17,10 @@ limitations under the License.
 
 #include "tensorflow/lite/micro/examples/hello_world/constants.h"
 #include "tensorflow/lite/micro/examples/hello_world/output_handler.h"
-#include "tensorflow/lite/micro/examples/hello_world/sine_model_data.h"
+
+// #include "tensorflow/lite/micro/examples/hello_world/sine_model_data.h"
+#include "tensorflow/lite/micro/examples/hello_world/temp_model_data.h"
+
 #include "tensorflow/lite/micro/kernels/all_ops_resolver.h"
 #include "tensorflow/lite/micro/micro_error_reporter.h"
 #include "tensorflow/lite/micro/micro_interpreter.h"
@@ -35,6 +38,10 @@ TfLiteTensor* input = nullptr;
 TfLiteTensor* output = nullptr;
 int inference_count = 0;
 
+#define ARR_SIZE 10    //to store 10 temperature points
+float temp_arr[ARR_SIZE];
+volatile int temp_index =0;
+
 // Create an area of memory to use for input, output, and intermediate arrays.
 // Finding the minimum value for your model may require some trial and error.
 constexpr int kTensorArenaSize = 2 * 1024;
@@ -46,12 +53,20 @@ void setup() {
   // Set up logging. Google style is to avoid globals or statics because of
   // lifetime uncertainty, but since this has a trivial destructor it's okay.
   // NOLINTNEXTLINE(runtime-global-variables)
+
+  for (int i=0; i<ARR_SIZE; i++){
+      temp_arr[i]=20.0f;
+  }
+
   static tflite::MicroErrorReporter micro_error_reporter;
   error_reporter = &micro_error_reporter;
 
   // Map the model into a usable data structure. This doesn't involve any
   // copying or parsing, it's a very lightweight operation.
-  model = tflite::GetModel(g_sine_model_data);
+
+  // model = tflite::GetModel(g_sine_model_data);
+  model = tflite::GetModel(g_temp_model_data);
+
   if (model->version() != TFLITE_SCHEMA_VERSION) {
     TF_LITE_REPORT_ERROR(error_reporter,
                          "Model provided is schema version %d not equal "
@@ -99,10 +114,17 @@ void loop() {
  
   printf ("\n before get_temp() ");
   float x_val = get_temp();
-  printf ("\n after get_temp() x_val=%f", x_val);
+  printf ("\n after get_temp() x_val=%f \n", x_val);
+
+  temp_index = (temp_index)%ARR_SIZE;
+  temp_arr[temp_index] = x_val;
 
   // Place our calculated x value in the model's input tensor
-  input->data.f[0] = x_val;
+  for (int i=0; i<ARR_SIZE; i++){
+     input->data.f[i] = temp_arr[i] ;
+  }
+
+  // input->data.f[0] = x_val;
 
   // Run inference, and report any error
   TfLiteStatus invoke_status = interpreter->Invoke();
@@ -117,7 +139,8 @@ void loop() {
 
   // Output the results. A custom HandleOutput function can be implemented
   // for each supported hardware target.
-  HandleOutput(error_reporter, x_val, y_val);
+  printf ("\n == current_temperature=%f    predicted temperature=%f \n", x_val, y_val);
+  //  HandleOutput(error_reporter, x_val, y_val);
 
   // Increment the inference_counter, and reset it if we have reached
   // the total number per cycle

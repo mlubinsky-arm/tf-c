@@ -34,6 +34,7 @@ static void tensor_thread_main(void)
 
     for (;;) {
         loop();
+        ThisThread::sleep_for(1000);
         ThisThread::yield();
     }
 }
