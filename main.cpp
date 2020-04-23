@@ -27,6 +27,10 @@
 #include "cypress_capsense.h"
 #include "blinker_app.h"
 
+#ifdef TF_MICRO
+#include "tensor_thread.h"
+#endif
+
 // Pointers to the resources that will be created in main_application().
 static MbedCloudClient *cloud_client;
 static bool cloud_client_running = true;
@@ -117,6 +121,10 @@ int main(void)
 {
     int status;
 
+#ifdef TF_MICRO
+    tensor_thread_init();
+    tensor_thread_start();
+#endif
     status = mbed_trace_init();
     if (status != 0) {
         printf("mbed_trace_init() failed with %d\n", status);
@@ -249,6 +257,7 @@ int main(void)
     res_thread.start(callback(&res_queue, &EventQueue::dispatch_forever));
     res_queue.call_every(2000, update_resources);
 
+/*
     while(cloud_client_running) {
         int in_char = getchar();
         if (in_char == 'i') {
@@ -266,6 +275,7 @@ int main(void)
         deregister_client();
         break;
     }
+*/
     return 0;
 }
 
