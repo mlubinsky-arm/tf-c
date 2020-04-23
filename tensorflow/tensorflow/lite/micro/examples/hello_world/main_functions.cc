@@ -24,6 +24,8 @@ limitations under the License.
 #include "tensorflow/lite/schema/schema_generated.h"
 #include "tensorflow/lite/version.h"
 
+#include "get_temp.h"
+
 // Globals, used for compatibility with Arduino-style sketches.
 namespace {
 tflite::ErrorReporter* error_reporter = nullptr;
@@ -90,7 +92,14 @@ void loop() {
   // trained on, and use this to calculate a value.
   float position = static_cast<float>(inference_count) /
                    static_cast<float>(kInferencesPerCycle);
-  float x_val = position * kXrange;
+
+// Michael
+//  float x_val = position * kXrange;
+
+ 
+  printf ("\n before get_temp() ");
+  float x_val = get_temp();
+  printf ("\n after get_temp() x_val=%f", x_val);
 
   // Place our calculated x value in the model's input tensor
   input->data.f[0] = x_val;

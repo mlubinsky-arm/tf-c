@@ -27,6 +27,9 @@
 #include "cypress_capsense.h"
 #include "blinker_app.h"
 
+
+#include "get_temp.h"
+
 #ifdef TF_MICRO
 #include "tensor_thread.h"
 #endif
@@ -50,6 +53,41 @@ static M2MResource* m2m_deregister_res;
 Thread res_thread;
 EventQueue res_queue;
 
+DigitalOut thermVDD(P10_3,1);
+DigitalOut thermGND(P10_0,0);
+//AnalogIn thermOut(P10_1);
+DigitalOut led(LED1);
+
+#define ARR_SIZE 10    //to store 10 temperature points
+#define BUFF_SIZE   100 // used by td rest api
+
+float temp_value[ARR_SIZE];
+volatile int temp_index =0;
+
+void init_temp(){
+    printf("init_temp() \n\n");
+    for (int i=0; i<ARR_SIZE; i++){
+      temp_value[i]=20.0f;
+    }
+    printf("\n");
+}
+/*
+float readTemp()
+{
+    float refVoltage = thermOut.read() * 2.4; // Range of ADC 0->2*Vref
+    float refCurrent = refVoltage  / 10000.0; // 10k Reference Resistor
+    float thermVoltage = 3.3 - refVoltage;    // Assume supply voltage is 3.3v
+    float thermResistance = thermVoltage / refCurrent;
+    float logrT = (float32_t)log((float64_t)thermResistance);
+
+    // Calculate temperature from the resistance of thermistor using Steinhart-Hart Equation 
+    float stEqn = (float32_t)((0.0009032679) + ((0.000248772) * logrT) +
+                             ((2.041094E-07) * pow((float64)logrT, (float32)3)));
+
+    float temperatureC = (float32_t)(((1.0 / stEqn) - 273.15)  + 0.5);
+    return temperatureC;
+}
+*/
 void print_client_ids(void)
 {
     printf("Account ID: %s\n", cloud_client->endpoint_info()->account_id.c_str());
@@ -120,6 +158,11 @@ void update_resources(void)
 int main(void)
 {
     int status;
+
+    while(1 > 2){
+    //   printf("temp=%f", readTemp());
+       printf("temp=%f", get_temp());
+    }
 
 #ifdef TF_MICRO
     tensor_thread_init();
