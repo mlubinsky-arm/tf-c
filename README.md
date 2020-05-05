@@ -11,8 +11,7 @@ xxd -i temp_model.tflite >  temp_model_data.cc
 ```
 mbed deploy
 
---compile with TF calls and flash to board:
-mbed compile -c -f  -DTF_MICRO  -m CY8CPROTO_062_4343W  -t GCC_ARM
+mbed compile -c -f  -m CY8CPROTO_062_4343W  -t GCC_ARM
 
 
 cp ./BUILD/CY8CPROTO_062_4343W/GCC_ARM/tf-c.hex /Volumes/DAPLINK/

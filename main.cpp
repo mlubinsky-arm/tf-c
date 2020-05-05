@@ -30,6 +30,8 @@
 
 #include "get_temp.h"
 
+#define TF_MICRO
+
 #ifdef TF_MICRO
 #include "tensor_thread.h"
 #endif
